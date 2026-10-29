@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Your Style{% endblock %}
+{% block content %}
+<h1>Your Style</h1>
+<div id="profile"></div>
+<h2>Favorites</h2>
+<div class="grid" id="favs"></div>
+<p><a class="btn ghost" href="{{ url_for('quiz') }}">Retake Style Quiz</a></p>
+{% endblock %}
+{% block scripts %}
+<script>
+(async () => {
+  const p = RD.profile();
+  document.getElementById('profile').innerHTML = p
+    ? `<div class="style-card"><h2>${p.primary}</h2><p>with ${p.secondary} accents · ${p.budget}</p>
+       <p>${p.palette.map(c => `<i class="dot lg" style="background:${c}"></i>`).join('')}</p></div>`
+    : `<div class="banner">No style yet. <a href="/quiz">Take the quiz →</a></div>`;
+  const cat = await RD.catalog(); const favs = RD.favs();
+  const items = favs.map(id => cat[id]).filter(Boolean);
+  document.getElementById('favs').innerHTML = items.length ? items.map(RD.cardHTML).join('')
+    : '<p class="muted">Tap the heart on any item in Discover to save it here.</p>';
+  RD.initHearts();
+})();
+</script>
+{% endblock %}

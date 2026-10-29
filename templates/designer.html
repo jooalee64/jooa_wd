@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Design Room{% endblock %}
+{% block content %}
+<div class="designer">
+  <div class="stage">
+    <div class="toolbar">
+      <label>Wall <input type="color" id="wall" value="#EFEAE2"></label>
+      <label>Floor <input type="color" id="floor" value="#C9B79A"></label>
+      <button class="btn ghost" id="reset">Reset</button>
+      <button class="btn" id="save">Save</button>
+    </div>
+    <div id="canvas"><div id="floor-band"></div></div>
+    <div class="selbar" id="selbar" hidden>
+      <button data-act="smaller">− Size</button><button data-act="bigger">+ Size</button>
+      <button data-act="rotl">⟲</button><button data-act="rotr">⟳</button>
+      <button data-act="front">Bring front</button><button data-act="del" class="danger">Remove</button>
+    </div>
+    <p class="muted small" id="hint">Drag to move · scroll wheel or buttons to resize · ⟲⟳ to rotate.</p>
+  </div>
+  <aside class="picker">
+    <h3>Add Furniture</h3>
+    <div class="chips" id="pcats"></div>
+    <div class="pgrid" id="pgrid"></div>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='designer.js') }}"></script>{% endblock %}
