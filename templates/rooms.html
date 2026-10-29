@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}My Rooms{% endblock %}
+{% block content %}
+<h1>My Rooms</h1>
+<div class="grid" id="rooms"></div>
+{% endblock %}
+{% block scripts %}
+<script>
+(async () => {
+  const cat = await RD.catalog(); const rooms = RD.get('rd_rooms', []);
+  const el = document.getElementById('rooms');
+  if (!rooms.length) { el.innerHTML = '<p class="muted">No saved rooms yet. Head to Design Room, then Save.</p>'; return; }
+  el.innerHTML = rooms.map(r => {
+    const dots = r.items.map(it => cat[it.fid] ? `<span class="mini" style="left:${it.x*100}%;top:${it.y*100}%;background:${cat[it.fid].color}">${cat[it.fid].icon}</span>` : '').join('');
+    const list = r.items.map(it => cat[it.fid]).filter(Boolean)
+      .map(f => `<li><a href="/item/${f.id}">${f.name}</a> <small>$${Math.round(f.price)} · ${f.retailer}</small></li>`).join('');
+    const total = r.items.reduce((s, it) => s + (cat[it.fid]?.price || 0), 0);
+    return `<div class="room-card"><div class="mini-room" style="background:${r.wall}"><div class="mini-floor" style="background:${r.floor}"></div>${dots}</div>
+      <h3>${r.name}</h3><p class="muted small">${r.items.length} items · est. $${Math.round(total).toLocaleString()}</p>
+      <ul class="plain">${list}</ul>
+      <a class="btn" href="/designer?room=${r.id}">Edit</a> <button class="btn ghost" data-del="${r.id}">Delete</button></div>`;
+  }).join('');
+  el.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    if (!confirm('Delete this room?')) return;
+    RD.set('rd_rooms', rooms.filter(r => r.id !== b.dataset.del)); location.reload();
+  });
+})();
+</script>
+{% endblock %}

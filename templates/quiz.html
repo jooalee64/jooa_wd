@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Style Quiz{% endblock %}
+{% block content %}
+<div class="narrow" id="quiz">
+  <progress id="bar" value="0" max="1"></progress>
+  <p class="muted small" id="count"></p>
+  <h1 id="prompt"></h1>
+  <p class="muted" id="sub"></p>
+  <div id="options" class="options"></div>
+</div>
+<div class="narrow" id="result" hidden></div>
+{% endblock %}
+{% block scripts %}
+<script>
+(async () => {
+  const qs = await (await fetch('/api/quiz')).json();
+  const answers = []; let i = 0;
+  const $ = id => document.getElementById(id);
+  function show() {
+    $('bar').max = qs.length; $('bar').value = i;
+    $('count').textContent = `Question ${i + 1} of ${qs.length}`;
+    $('prompt').textContent = qs[i].prompt; $('sub').textContent = qs[i].subtitle;
+    $('options').innerHTML = qs[i].options.map((o, oi) =>
+      `<button class="option" data-oi="${oi}">${o.palette ? `<i class="dot" style="background:${o.palette}"></i>` : ''}${o.text}</button>`).join('');
+    $('options').querySelectorAll('button').forEach(b => b.onclick = () => pick(+b.dataset.oi));
+  }
+  async function pick(oi) {
+    answers.push([i, oi]);
+    if (++i < qs.length) return show();
+    const res = await fetch('/api/quiz', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({answers})});
+    const profile = await res.json(); RD.set('rd_profile', profile); renderResult(profile);
+  }
+  function renderResult(p) {
+    $('quiz').hidden = true; $('result').hidden = false;
+    $('result').innerHTML = `<p class="muted">Your style is</p><h1 class="big-title">${p.primary}</h1>
+      <p class="muted">with hints of ${p.secondary}</p><p>${p.blurb}</p>
+      <p>${p.palette.map(c => `<i class="dot lg" style="background:${c}"></i>`).join('')}</p>
+      <p>Budget comfort zone: <b>${p.budget}</b></p>
+      <a class="btn" href="/">See curated picks for me</a>`;
+  }
+  show();
+})();
+</script>
+{% endblock %}

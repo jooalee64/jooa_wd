@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ item.name }}{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('discover') }}">← Back</a>
+<article class="detail">
+  <div class="hero-img" style="background:{{ item.color }}"><span>{{ item.icon }}</span></div>
+  <div>
+    <div class="brand">{{ item.brand|upper }}</div>
+    <h1>{{ item.name }}</h1>
+    <p class="muted">★ {{ item.rating }} · {{ item.retailer }}</p>
+    <p class="big">${{ item.price|int }} <span class="tier">{{ item.tier }}</span></p>
+    <h3>About this piece</h3><p>{{ item.description }}</p>
+    <h3>Dimensions</h3><p>{{ item.dimensions }}</p>
+    <h3>Style tags</h3>
+    <p>{% for s in item.styles %}<span class="tag" style="background:{{ STYLES[s][0] }}33">{{ s }}</span>{% endfor %}</p>
+    <button class="btn" id="fav-btn" data-fav="{{ item.id }}">♡ Save to Favorites</button>
+    <a class="btn ghost" href="{{ url_for('designer') }}?add={{ item.id }}">Place in my room</a>
+    <p class="muted small">Demo catalog. Connect `retailer` to real product URLs / affiliate links for checkout.</p>
+  </div>
+</article>
+{% endblock %}
+{% block scripts %}
+<script>
+const fb = document.getElementById('fav-btn');
+const sync = () => fb.textContent = RD.favs().includes(fb.dataset.fav) ? '♥ Saved to Favorites' : '♡ Save to Favorites';
+fb.onclick = () => { RD.toggleFav(fb.dataset.fav); sync(); }; sync();
+</script>
+{% endblock %}

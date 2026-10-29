@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "_macros.html" import card %}
+{% block content %}
+<section class="hero">
+  <h1>The Edit</h1>
+  <p>Curated furniture &amp; decor, organized like a magazine, not an endless scroll.</p>
+</section>
+
+<div id="shelf-wrap" {% if filtered %}hidden{% endif %}>
+  <div id="no-profile" class="banner" hidden>
+    Tell us your taste and we'll curate for you. <a href="{{ url_for('quiz') }}">Take the 1-minute style quiz →</a>
+  </div>
+  <div id="shelf-section" hidden>
+    <h2 id="shelf-title"></h2>
+    <div class="shelf" id="shelf"></div>
+  </div>
+</div>
+
+<form class="filters" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search sofas, lighting, decor…">
+  <div class="chips">
+    <label class="chip"><input type="radio" name="category" value="" {{ 'checked' if not category }} onchange="this.form.submit()"><span>All</span></label>
+    {% for cat, icon in CATEGORIES.items() %}
+    <label class="chip"><input type="radio" name="category" value="{{ cat }}" {{ 'checked' if category==cat }} onchange="this.form.submit()"><span>{{ icon }} {{ cat }}</span></label>
+    {% endfor %}
+  </div>
+  <details {{ 'open' if sel_styles or sel_budgets }}>
+    <summary>Filter by style &amp; budget</summary>
+    <div class="filter-grid">
+      <div>
+        <h4>Style</h4>
+        {% for s in STYLES %}
+        <label class="check"><input type="checkbox" name="style" value="{{ s }}" {{ 'checked' if s in sel_styles }}> {{ s }}</label>
+        {% endfor %}
+      </div>
+      <div>
+        <h4>Budget</h4>
+        {% for name, rng, lo, hi in BUDGETS %}
+        <label class="check"><input type="checkbox" name="budget" value="{{ name }}" {{ 'checked' if name in sel_budgets }}> {{ name }} <small>{{ rng }}</small></label>
+        {% endfor %}
+      </div>
+    </div>
+    <button class="btn" type="submit">Apply</button>
+    <a class="btn ghost" href="{{ url_for('discover') }}">Clear</a>
+  </details>
+</form>
+
+<h2>All Picks ({{ items|length }})</h2>
+<div class="grid">
+  {% for item in items %}{{ card(item) }}{% else %}<p class="muted">No matches. Try clearing a filter.</p>{% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+RD.initHearts();
+(async () => {
+  const p = RD.profile();
+  if (!p) { document.getElementById('no-profile').hidden = false; return; }
+  const qs = new URLSearchParams({primary: p.primary, secondary: p.secondary, budget: p.budget});
+  const items = await (await fetch('/api/recommend?' + qs)).json();
+  document.getElementById('shelf-title').textContent = `Curated for your ${p.primary} style`;
+  document.getElementById('shelf').innerHTML = items.slice(0, 8).map(RD.cardHTML).join('');
+  document.getElementById('shelf-section').hidden = false;
+  RD.initHearts();
+})();
+</script>
+{% endblock %}

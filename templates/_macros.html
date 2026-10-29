@@ -1,0 +1,11 @@
+{% macro card(item) %}
+<div class="card">
+  <a href="{{ url_for('item_detail', item_id=item.id) }}">
+    <div class="thumb" style="background:{{ item.color }}"><span>{{ item.icon }}</span></div>
+  </a>
+  <button class="heart" data-fav="{{ item.id }}" aria-label="favorite">♡</button>
+  <div class="brand">{{ item.brand|upper }}</div>
+  <a class="name" href="{{ url_for('item_detail', item_id=item.id) }}">{{ item.name }}</a>
+  <div class="price">${{ item.price|int }} <span class="tier">{{ item.tier }}</span></div>
+</div>
+{% endmacro %}
